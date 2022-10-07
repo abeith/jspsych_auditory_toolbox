@@ -1,0 +1,56 @@
+* Installing jsPsych
+
+The [[https://www.jspsych.org/7.3/tutorials/hello-world/][jsPsych tutorials]] suggest three ways of including jsPsych in your project
+
+1. Linking to a CDN. I don't like this option because it relies on a third party to host the code you're using.
+2. Downloading the distribution and hosting your own copy. This is easy and very flexible.
+3. Using npm. If you know what this is you can decide yourself if it's the right approach for you, otherwise this is probably not the best place to learn.
+
+I went for method 2 by downloading the latest release of jsPsych from GitHub. You can [[https://www.eff.org/deeplinks/2018/06/gdpr-and-browser-fingerprinting-how-it-changes-game-sneakiest-web-trackers][download]] it manually and unzip it to your project folder or on Linux/MacOS you can use the command line
+
+#+begin_src sh :eval never
+  cd /path/to/your/project
+  curl -L https://www.github.com/jspsych/jspsych/releases/latest/download/jspsych.zip > jspsych.zip
+  unzip jspsych.zip -d jspsych
+  rm jspsych.zip
+#+end_src
+
+* Hello World
+
+You can then create the [[https://www.jspsych.org/7.3/tutorials/hello-world/][hello world example]] by saving the following code as =/path/to/your/project/hello_world/index.html=
+
+#+begin_src html :mkdirp yes :tangle hello_world/index.html
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>My experiment</title>
+      <script src="../jspsych/dist/jspsych.js"></script>
+      <script src="../jspsych/dist/plugin-html-keyboard-response.js"></script>
+      <link href="../jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body></body>
+    <script>
+      const jsPsych = initJsPsych();
+
+      const hello_trial = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: 'Hello world!'
+      }
+
+      jsPsych.run([hello_trial]);
+    </script>
+  </html>
+
+#+end_src
+
+You can then open the html file in your web browser to check that it works.
+
+* Local hosting
+
+Opening the file in your web browser is fine for a hello world demo but you'll need a server to test plugins that record audio and other features associated with privacy concerns. Docker is a very easy way to do this. Once you have Docker [[https://www.docker.com][installed]] you can create a server by running the following command in your Terminal/Command Prompt
+
+#+begin_src sh
+  docker run -d -p 8080:80 --name jspsych_server -v "$PWD":/var/www/html php:7.2-apache
+#+end_src
+
+You can then test it by visiting [[http://localhost:8080/hello_world/][http://localhost:8080/hello_world/]] in your browser.
