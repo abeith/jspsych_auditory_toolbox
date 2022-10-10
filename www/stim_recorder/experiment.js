@@ -19,11 +19,7 @@ const saveFunc = async (sig, fs, source = "mic") => {
     // Apache detects file as 'audio/x-wav' rather than 'audio/wav' so using that for consistency
     let blob = new window.Blob([ new DataView(wav) ], { type: 'audio/x-wav' });
 
-    if(source === "mic"){
-        fetch(`php/saveMic.php`, { method: "POST", body: blob });
-    }else if(source === "stim"){
-        fetch(`php/saveStim.php`, { method: "POST", body: blob });
-    };
+    fetch(`saveAudio.php`, { method: "POST", body: blob });
 
     await hash;
     return hash;
@@ -55,9 +51,12 @@ const saveData = async(data, uri) => {
 var saved = false;
 
 const saveTrialData = () => {
+
     if(!saved){
-        let trial_data = jsPsych.data.get().json();
-        saveData(trial_data, './php/saveTrials.php');
+        let trial_data = jsPsych.data.get();
+        trial_data.expt_name = 'stim_recorder';
+        trial_data.subj_id = jsPsych.randomization.randomID(6);
+        saveData(JSON.stringify(trial_data), 'saveTrials.php');
         saved = true;
     };
 };
@@ -74,9 +73,19 @@ var jsPsych = initJsPsych({
 
 // Always a good idea to specify the key to encourage participants to read text on the screen
 let hello = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: 'Hello!<br>Press y to continue.',
-    choices: ['y']
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'Need to click something for AudioContext to work',
+    choices: ['Contine']
+};
+
+// First audio recording trial will ask for permission so we put a quick trial here
+let dummy_rec = {
+    type: PCMRecord,
+    stimulus: 'Waiting for microphone permission...',
+    trial_duration: 0.1,
+    on_finish: (data) => {
+        data.mic_signal = null;
+    }
 };
 
 // If using a trial to say bye at the end make sure it has a duration so that the experiment ends
@@ -94,7 +103,7 @@ var initMic = {
 // We don't want to record the participant hitting the key from the end of the previous trial so we add a short delay (in milliseconds)
 let delay = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: 'delay',
+    stimulus: '+',
     choices: 'NO_KEYS',
     trial_duration: 300
 };
@@ -104,7 +113,8 @@ let delay = {
 let rec = {
     type: PCMRecord,
     stimulus: jsPsych.timelineVariable('stimulus'),
-    trial_duration: 20.0
+    trial_duration: 5.0,
+    display: 'level'
 };
 
 // Let the participant listen back to the audio
@@ -144,7 +154,7 @@ let trials = {
 };
 
 // Make a timeline with our trials in the correct order
-let timeline = [hello, initMic, trials, bye];
+let timeline = [hello, dummy_rec, trials, bye];
 
 // Run the experiment
 jsPsych.run(timeline);

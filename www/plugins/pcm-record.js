@@ -12,6 +12,10 @@ var PCMRecord = (function (jspsych) {
                 type: jspsych.ParameterType.FLOAT,
                 default: 1.0,
             },
+            display: {
+                type: jspsych.ParameterType.STRING,
+                default: 'ring',
+            },
         },
     };
 
@@ -32,28 +36,37 @@ var PCMRecord = (function (jspsych) {
             const canvasX = 50;
             const canvasY = 50;
 
-            let canvas = document.createElement('canvas');
-            canvas.width = canvasX;
-            canvas.height = canvasY;
-            var ctx = canvas.getContext('2d');
-            let stim_div = document.createElement('div');
-            stim_div.innerText = trial.stimulus;
+            if(trial.display == 'ring'){
+                let canvas = document.createElement('canvas');
+                canvas.width = canvasX;
+                canvas.height = canvasY;
+                var ctx = canvas.getContext('2d');
+
+                display_element.appendChild(canvas);
+            };
 
             const vuX = 200;
             const vuY = 50;
 
-            let vu = document.createElement('canvas');
-            vu.width = vuX;
-            vu.height = vuY;
-            vu.style.border = "solid 1px #555";
-            var vu_ctx = vu.getContext('2d');
-            vu_ctx.beginPath();
-            vu_ctx.strokeStyle = "#f00";
-            vu_ctx.moveTo(0, vuY);
+            if(trial.display == 'level'){
+                let vu = document.createElement('canvas');
+                vu.width = vuX;
+                vu.height = vuY;
+                vu.style.border = "solid 1px #555";
+                var vu_ctx = vu.getContext('2d');
+                vu_ctx.beginPath();
+                vu_ctx.strokeStyle = "#f00";
+                vu_ctx.moveTo(0, vuY);
 
-            display_element.appendChild(canvas);
+                display_element.appendChild(vu);
+
+                this.max_vol = 1.0;
+            };
+
+            let stim_div = document.createElement('div');
+            stim_div.innerText = trial.stimulus;
             display_element.appendChild(stim_div);
-            display_element.appendChild(vu);
+
 
             var context = this.jsPsych.pluginAPI.audioContext();
 
@@ -71,8 +84,6 @@ var PCMRecord = (function (jspsych) {
                 ctx.strokeStyle = "#f00";
                 ctx.stroke();
             };
-
-            this.max_vol = 1.0;
 
             const rgbToHex = (r, g, b) => {
                 return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
@@ -130,14 +141,18 @@ var PCMRecord = (function (jspsych) {
                 this.micProcessor.port.onmessage = (event) => {
                     if (event.data.eventType === 'data') {
                         event.data.audioBuffer.map(x => trial_data.mic_signal.push(x));
-                        draw_level(Math.sqrt(event.data.vol));
+                        if(trial.display == 'level'){
+                            draw_level(Math.cbrt(event.data.vol));
+                        };
                     };
                     if (event.data.eventType === 'stop') {
                         endTrial();
                     };
                 };
 
-                draw();
+                if(trial.display == 'ring'){
+                    draw();
+                };
             };
 
 

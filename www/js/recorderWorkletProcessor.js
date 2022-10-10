@@ -48,7 +48,8 @@ class RecorderWorkletProcessor extends AudioWorkletProcessor {
 
         this.port.postMessage({
             eventType: 'data',
-            audioBuffer: buffer
+            audioBuffer: buffer,
+            vol: this._rms(buffer)
         });
 
         this._initBuffer();
@@ -58,6 +59,13 @@ class RecorderWorkletProcessor extends AudioWorkletProcessor {
         this.port.postMessage({
             eventType: 'stop'
         });
+    }
+
+    _rms(buffer) {
+        let sqr = buffer.map(x => x * x);
+        let sum = sqr.reduce((a, b) => a + b);
+        let mean = sum/buffer.length;
+        return Math.sqrt(mean);
     }
 
     process(inputs, outputs, parameters) {

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My experiment</title>
+        <script src="../jspsych/dist/jspsych.js"></script>
+        <script src="../jspsych/dist/plugin-html-keyboard-response.js"></script>
+        <link href="../jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body></body>
+    <script>
+     const jsPsych = initJsPsych();
+
+     const hello_trial1 = {
+         type: jsPsychHtmlKeyboardResponse,
+         stimulus: 'Hello world!',
+         choices: [' ']
+     }
+
+     const hello_trial2 = {
+         type: jsPsychHtmlKeyboardResponse,
+         stimulus: 'I\m the next trial!',
+         choices: [' ']
+     }
+
+     jsPsych.run([hello_trial1, hello_trial2]);
+    </script>
+</html>

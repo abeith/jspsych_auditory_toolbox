@@ -11,15 +11,15 @@ I went for method 2 by downloading the latest release of jsPsych from GitHub. Yo
 #+begin_src sh :eval never
   cd /path/to/your/project
   curl -L https://www.github.com/jspsych/jspsych/releases/latest/download/jspsych.zip > jspsych.zip
-  unzip jspsych.zip -d jspsych
+  unzip jspsych.zip -d www/jspsych
   rm jspsych.zip
 #+end_src
 
 * Hello World
 
-You can then create the [[https://www.jspsych.org/7.3/tutorials/hello-world/][hello world example]] by saving the following code as =/path/to/your/project/hello_world/index.html=
+You can then create the [[https://www.jspsych.org/7.3/tutorials/hello-world/][hello world example]] by saving the following code as =/path/to/your/project/www/hello_world/index.html=
 
-#+begin_src html :mkdirp yes :tangle hello_world/index.html
+#+begin_src html :mkdirp yes :tangle www/hello_world/index.html
   <!DOCTYPE html>
   <html>
     <head>
@@ -47,10 +47,20 @@ You can then open the html file in your web browser to check that it works.
 
 * Local hosting
 
+** Docker run
+
 Opening the file in your web browser is fine for a hello world demo but you'll need a server to test plugins that record audio and other features associated with privacy concerns. Docker is a very easy way to do this. Once you have Docker [[https://www.docker.com][installed]] you can create a server by running the following command in your Terminal/Command Prompt
 
 #+begin_src sh
-  docker run -d -p 8080:80 --name jspsych_server -v "$PWD":/var/www/html php:7.2-apache
+  docker run -d -p 8080:80 --name jspsych_server -v "$PWD"/www:/var/www/html php:7.2-apache
 #+end_src
 
 You can then test it by visiting [[http://localhost:8080/hello_world/][http://localhost:8080/hello_world/]] in your browser.
+
+** Docker compose
+
+Alternatively, this repository comes with a Docker Compose configuration with a named Docker volume and network. Docker volumes make it easier to work with file permissions and don't expose your computer's file system to the Docker environment. You can bring up this configuration with the following command
+
+#+begin_src sh
+  docker compose build && docker compose up -d
+#+end_src

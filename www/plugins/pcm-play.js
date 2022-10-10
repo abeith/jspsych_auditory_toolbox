@@ -48,7 +48,7 @@ var PCMPlay = (function (jspsych) {
             var html = `<div>${trial.pcmData.stimulus}</div>`;
             html += `<button id="play"><span>Play (${trial.playKey})</span></button><br>`;
             html += `<button id="retry"><span>Retry (${trial.retryKey})</span></button><br>`;
-            html += `<button id="end_trial"><span>Sounds good (${trial.nextKey})</span></button><br>`;
+            html += `<button id="end_trial"><span>Save (${trial.nextKey})</span></button><br>`;
 
             var context = this.jsPsych.pluginAPI.audioContext();
 
@@ -78,7 +78,7 @@ var PCMPlay = (function (jspsych) {
             const nextButton = document.getElementById('end_trial');
 
             const retryAction = () => {
-                this.jsPsych.data.getLastTrialData().trials[0].mic_signal = null;
+                // this.jsPsych.data.getLastTrialData().trials[0].mic_signal = null;
                 display_element.innerHTML = '';
                 end_trial(true);
             };

@@ -1,0 +1,95 @@
+---
+title: "Building Online Auditory Experiments with Accurate Reaction Times"
+author: Alistair Beith
+date: 7th November, 2022
+output:
+  ioslides_presentation:
+    includes:
+      in_header: header.html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(tidyverse)
+```
+
+## Outline
+
+- Quick intro to jsPsych
+- Auditory example
+- Latency example
+
+# Hello jsPsych
+
+## Hello JSON
+
+JavaScript Object Notation
+
+```{js, hello-json, fig.cap="Some JS code", echo=TRUE}
+let x = {
+    name: "Alistair",
+    colours: ["red", "green", "blue"],
+    fav_func: (arr) => arr[Date.now()%arr.length]
+};
+
+document.write(`Hello, my name is ${x.name}.`);
+document.write(` My favourite colour is ${x.fav_func(x.colours)}.`);
+```
+
+## Hello World
+
+```{js, hello-world, fig.cap="Some JS code", echo=TRUE, eval=FALSE}
+const jsPsych = initJsPsych();
+
+const hello_trial = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: 'Hello world!'
+};
+
+const goodbye_trial = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: 'Goodbye world!'
+};
+
+const timeline = [hello_trial, goodbye_trial];
+
+jsPsych.run(timeline);
+```
+
+## Hello World Demo {.jspsych_demo_container}
+
+```{r, echo=FALSE}
+knitr::include_app("hello_world.html")
+```
+
+# Auditory Experiments
+
+## Recording Audio
+
+```{r}
+symbols <- c('\u2718', '\u2714')
+
+  tribble(
+    ~API, ~Feature, ~jsPsych, ~`Auditory Toolbox`,
+    'MediaRecorder', '', 'Y', 'N',
+    'AudioWorklets', '', 'N', 'Y',
+    '', 'PCM data', 'N', 'Y',
+    '', 'Dedicated processing thread', 'N', 'Y',
+    '', 'Latency measurement', 'N', 'Y',
+    '', 'Stereo effect', 'N', 'Y'
+  )|>
+  mutate_at(vars(3:4), ~if_else(.x == 'N', symbols[1], symbols[2])) |>
+  kable()
+```
+
+API = Application Programming Interface<br>
+PCM = Pulse-Code Modulation (uncompressed audio data)
+
+## Audio Recorder Demo {.jspsych_demo_container}
+
+```{r, echo=FALSE}
+knitr::include_app("audio_recorder.html")
+```
+
+

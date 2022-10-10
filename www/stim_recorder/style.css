@@ -1,0 +1,18 @@
+body {
+    background-color: #000;
+    color: #ddd;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    flex-direction: column;
+    padding: 5em;
+}
+
+.center > div {
+    display: flex;
+    padding: 1em;
+}
