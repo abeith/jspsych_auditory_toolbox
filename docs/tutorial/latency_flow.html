@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <style>.mermaid svg { height: auto; }</style>
+    </head>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+        <script>
+         mermaid.initialize({ startOnLoad: true, theme: 'neutral'});
+        </script>
+
+        <div class="mermaid">
+            graph LR
+            stim{chirp}-->|output<br>latency|headphones
+            stim{chirp}-->left(L)
+            left-->mult{multiplier}
+            headphones-.-microphone
+            microphone-->|input<br>latency|right(R)
+            right-->mult{multiplier}
+
+        </div>
+    </body>
+</html>

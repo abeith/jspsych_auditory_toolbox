@@ -65,20 +65,47 @@ knitr::include_app("hello_world.html")
 
 # Auditory Experiments
 
-## Recording Audio
+## Audio Recorder
+
+```{js, echo=TRUE, eval=FALSE}
+const rec = {
+    type: PCMRecord,
+    stimulus: 'Blue'
+};
+
+const play = {
+    type: PCMPlay,
+    pcmData: () => jsPsych.data.get().last(1).trials[0]
+};
+
+const rec_play = {
+    timeline: [rec, play],
+    loop_function: (data) => {
+        let retry = data.values()[1].retry;
+        data.values()[0].mic_signal = (retry) ? "delete" : "save";
+        return data.values()[1].retry;
+    }
+};
+```
+
+## Audio Recorder Demo {.jspsych_demo_container}
+
+<iframe src="audio_recorder.html"></iframe>
+
+## Feature Comparison
 
 ```{r}
 symbols <- c('\u2718', '\u2714')
 
   tribble(
-    ~API, ~Feature, ~jsPsych, ~`Auditory Toolbox`,
+    ~Method, ~Feature, ~jsPsych, ~`Auditory Toolbox`,
     'MediaRecorder', '', 'Y', 'N',
     'AudioWorklets', '', 'N', 'Y',
     '', 'PCM data', 'N', 'Y',
     '', 'Dedicated processing thread', 'N', 'Y',
-    '', 'Latency measurement', 'N', 'Y',
-    '', 'Stereo effect', 'N', 'Y'
-  )|>
+    '', 'Sample level precision', 'N', 'Y',
+    '', 'Latency measurement', 'N', 'Y'
+  ) |>
   mutate_at(vars(3:4), ~if_else(.x == 'N', symbols[1], symbols[2])) |>
   kable()
 ```
@@ -86,10 +113,46 @@ symbols <- c('\u2718', '\u2714')
 API = Application Programming Interface<br>
 PCM = Pulse-Code Modulation (uncompressed audio data)
 
-## Audio Recorder Demo {.jspsych_demo_container}
+# Latency
+## Latency Test
+
+<iframe src="latency_flow.html" style="height: 200px; border: none;"></iframe>
+
+- Participant holds headphones up to microphone
+- Left and Right channels multiplied
+- Peak frequency is proportional to delay
+
+## Latency Test Demo
 
 ```{r, echo=FALSE}
-knitr::include_app("audio_recorder.html")
+knitr::include_app("latency_test.html")
 ```
 
+## Evaluation simulated
 
+```{r, warning=FALSE}
+
+sim_data <- readLines('sim_trials.json') |>
+  jsonlite::fromJSON()
+
+p1 <- sim_data %>%
+  filter(trial_type == 'latency-test') %>%
+  as_tibble() %>%
+  ggplot() +
+  geom_function(fun = identity, aes(dummy), lty = 2, size = 0.5, colour = 'red') +
+  geom_ribbon(aes(dummy, ymin = latency - (bin_width/2), ymax = latency + (bin_width/2)), alpha = 0.2) +
+  geom_line(aes(dummy, latency)) +
+  labs(x = 'Simulated delay', y = 'Estimated latency')
+p2 <- sim_data %>%
+  filter(trial_type == 'latency-test') %>%
+  as_tibble() %>%
+  mutate(diff = latency - dummy) %>%
+  ggplot(aes(dummy, diff)) +
+  geom_point() +
+  labs(x = 'Simulated delay', y = 'Error (ms)')
+cowplot::plot_grid(p1, p2)
+```
+
+## Evaluation real
+
+![](latency_eval.svg)

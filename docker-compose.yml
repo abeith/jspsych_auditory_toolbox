@@ -8,7 +8,7 @@ services:
       - ${HTTP_PORT}:80
     restart: always
     volumes:
-      - ./www:/var/www/html/
+      - ./docs:/var/www/html/
       - data_volume:/var/data/recordings
 networks:
   default:

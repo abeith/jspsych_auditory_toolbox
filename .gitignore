@@ -2,3 +2,4 @@
 *.org
 !README.org
 /jspsych.zip
+**.DS_Store

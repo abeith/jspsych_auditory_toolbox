@@ -40,14 +40,9 @@ const delay = {
 const rec_play = {
     timeline: [delay, rec, play],
     loop_function: (data) => {
-
-        if(data.values()[2].retry){
-            data.values()[1].mic_signal = "deleted";
-            return true;
-        }else{
-            data.values()[1].mic_signal = "would be saved";
-            return false;
-        }
+        let retry = data.values()[2].retry;
+        data.values()[1].mic_signal = (retry) ? "delete" : "save";
+        return data.values()[2].retry;
     }
 };
 
