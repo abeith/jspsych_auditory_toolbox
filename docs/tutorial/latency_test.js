@@ -2,6 +2,24 @@ const jsPsych = initJsPsych({
     on_finish: () => jsPsych.data.displayData()
 });
 
+const trials = [
+    {fftSize: 1024, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 10, dummy: 50/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 2, dummy: 50/1000},
+    {fftSize: 1024, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
+    {fftSize: 1024, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 5, dummy: 52/1000}
+];
+
+const preload = {
+    timeline: [{
+        type: jsPsychPreload,
+        audio: jsPsych.timelineVariable('stimulus')
+    }],
+    timeline_variables: trials
+};
+
 const latency_test = {
     timeline: [
         {
@@ -17,15 +35,7 @@ const latency_test = {
             fftSize: jsPsych.timelineVariable('fftSize'),
             dummy: jsPsych.timelineVariable('dummy')
     }],
-    timeline_variables: [
-        {fftSize: 1024, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 10, dummy: 50/1000},
-        {fftSize: 2048, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 2, dummy: 50/1000},
-        {fftSize: 1024, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
-        {fftSize: 2048, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
-        {fftSize: 1024, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
-        {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
-        {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 5, dummy: 52/1000}
-    ]
+    timeline_variables: trials
 };
 
-jsPsych.run([latency_test]);
+jsPsych.run([preload, latency_test]);
