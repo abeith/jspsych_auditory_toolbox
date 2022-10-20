@@ -3,13 +3,13 @@ const jsPsych = initJsPsych({
 });
 
 const trials = [
-    {fftSize: 1024, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 10, dummy: 50/1000},
-    {fftSize: 2048, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 2, dummy: 50/1000},
-    {fftSize: 1024, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
-    {fftSize: 2048, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 50/1000},
-    {fftSize: 1024, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
-    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 50/1000},
-    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 5, dummy: 52/1000}
+    {fftSize: 1024, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 2, dummy: 100/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp4.wav', f_max: 4000, duration: 2, dummy: 100/1000},
+    {fftSize: 1024, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 100/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp8.wav', f_max: 8000, duration: 2, dummy: 100/1000},
+    {fftSize: 1024, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 100/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 2, dummy: 100/1000},
+    {fftSize: 2048, stimulus: '../sounds/chirp16.wav', f_max: 16000, duration: 5, dummy: 102/1000}
 ];
 
 const preload = {

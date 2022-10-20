@@ -28,6 +28,10 @@ var jsPsychLatencyTest = (function (jspsych) {
                 type: jspsych.ParameterType.FLOAT,
                 default: 0.05,
             },
+            randomDelay: {
+                type: jspsych.ParameterType.BOOL,
+                default: true,
+            },
         },
     };
 
@@ -45,7 +49,8 @@ var jsPsychLatencyTest = (function (jspsych) {
         }
         trial(display_element, trial) {
 
-            var context = this.jsPsych.pluginAPI.audioContext();
+            // var context = this.jsPsych.pluginAPI.audioContext();
+            var context = new AudioContext();
 
             let disp_prop = 1000/trial.fftSize;
 
@@ -54,7 +59,6 @@ var jsPsychLatencyTest = (function (jspsych) {
             };
 
             // Audio
-
 
             const getMic = async () => {
                 try{
@@ -70,14 +74,17 @@ var jsPsychLatencyTest = (function (jspsych) {
                 };
             };
 
-
-            const play = async (stimulus) => {
+            const setup = async (stimulus) => {
                 this.gainNode = context.createGain();
                 this.gainNode.gain.setValueAtTime(trial.vol, 0);
                 this.analyser = context.createAnalyser();
                 this.analyser.fftSize = trial.fftSize;
                 this.bufferLen = this.analyser.frequencyBinCount;
                 this.fftData = new Uint8Array(this.bufferLen);
+
+                this.binWidth = 1000 * (context.sampleRate / (2 * trial.f_max)) / this.bufferLen;
+                this.randomDelay = (trial.randomDelay) ? (Math.random() * this.binWidth) / 1000 : 0.0;
+                this.delayNode = new DelayNode(context, {delayTime: this.randomDelay});
 
                 let buffer = await this.jsPsych.pluginAPI.getAudioBuffer(stimulus);
                 await context.audioWorklet.addModule('../js/multiplierWorkletProcessor.js');
@@ -91,20 +98,31 @@ var jsPsychLatencyTest = (function (jspsych) {
                 this.audio.connect(this.gainNode);
                 this.gainNode.connect(context.destination);
 
-                this.start_time = context.currentTime + 0.1;
+                if(trial.dummy){
+                    this.dummy = await context.createBufferSource();
+                    this.dummy.buffer = await buffer;
+                    this.dummy.connect(this.delayNode);
+                    this.delayNode.connect(this.channelMultiplier, 0, 1);
+                    this.channelMultiplier.connect(this.analyser);
+                }else{
+                    this.mediaStreamNode = context.createMediaStreamSource(this.stream);
+                    this.mediaStreamNode.connect(this.delayNode);
+                    this.delayNode.connect(this.channelMultiplier, 0, 1);
+                    this.channelMultiplier.connect(this.analyser);
+                };
+            };
+
+            const play = async (stimulus) => {
+
+                await setup(stimulus);
+                await context.resume();
+
+                this.start_time = context.currentTime + 0.5;
 
                 if(trial.dummy){
-                    this.dummy = context.createBufferSource();
-                    this.dummy.buffer = buffer;
-                    this.dummy.connect(this.channelMultiplier, 0, 1);
-                    this.channelMultiplier.connect(this.analyser);
-                    // Delay audio by 50ms
                     this.audio.start(this.start_time);
                     this.dummy.start(this.start_time + trial.dummy);
                 }else{
-                    this.mediaStreamNode = context.createMediaStreamSource(this.stream);
-                    this.mediaStreamNode.connect(this.channelMultiplier, 0, 1);
-                    this.channelMultiplier.connect(this.analyser);
                     this.audio.start(this.start_time);
                 }
 
@@ -117,7 +135,7 @@ var jsPsychLatencyTest = (function (jspsych) {
                 if(trial.dummy){
                     this.ctx.strokeStyle = 'rgb(256, 0, 0)';
                     this.ctx.beginPath();
-                    const freq = Math.round(disp_prop * this.bufferLen) - ((trial.f_max * 2) * (trial.dummy * this.bufferLen) / context.sampleRate);
+                    const freq = Math.round(disp_prop * this.bufferLen) - ((trial.f_max * 2) * ((trial.dummy + this.randomDelay) * this.bufferLen) / context.sampleRate);
                     this.ctx.moveTo(0, freq);
                     this.ctx.lineTo(500, freq);
                     this.ctx.stroke();
@@ -144,8 +162,6 @@ var jsPsychLatencyTest = (function (jspsych) {
                 let fs = context.sampleRate;
                 let fft_data = [...this.audio_data.fft_data];
 
-                let binWidth = 1000 * (context.sampleRate / (2 * trial.f_max)) / this.bufferLen;
-
                 let latency = fft_data.map(x => x.fft).map(x => x.indexOf(Math.max(...x))).filter(x => x > 0);
 
                 latency = latency.reduce((total, cv, ci, arr) => {
@@ -156,12 +172,14 @@ var jsPsychLatencyTest = (function (jspsych) {
                 }, 0);
 
                 // Index 0 is bin 1
-                latency = (latency + 0.5) * binWidth;
+                // latency = (latency + 0.5) * binWidth;
+                latency = latency * this.binWidth;
+                latency = latency - (this.randomDelay * 1000);
 
                 // fft_data = null;
 
                 if(trial.dummy){
-                    console.log(`${1000*trial.dummy}:${latency}`);
+                    console.log(`${latency - (0.5 * this.binWidth)}<${1000*trial.dummy}<${latency + (0.5 * this.binWidth)}`);
                 }else{
                     console.log(`${latency}`);
                 };
@@ -180,15 +198,20 @@ var jsPsychLatencyTest = (function (jspsych) {
                     fs: context.sampleRate,
                     // fft_data: fft_data,
                     latency: latency,
+                    latency_upper: latency + (0.5 * this.binWidth),
+                    latency_lower: latency - (0.5 * this.binWidth),
                     f_max: trial.f_max,
-                    bin_width: binWidth,
+                    bin_width: this.binWidth,
                     dummy: Math.round(trial.dummy * 1000),
                     file: trial.stimulus,
-                    fft_size: trial.fftSize
+                    fft_size: trial.fftSize,
+                    random_delay: this.randomDelay * 1000
                 };
 
                 // if (trial.display) clearInterval(draw_timer);
                 display_element.innerHTML = '';   
+
+                context.suspend();
 
                 this.jsPsych.finishTrial(trial_data);
             };
@@ -223,11 +246,14 @@ var jsPsychLatencyTest = (function (jspsych) {
                     const y = Math.round(disp_prop * this.bufferLen) - j;
                     this.ctx.fillRect(x, y, 4, 1);
                 };
+
+                // console.log(context.currentTime);
+                console.log(context.state);
             };
 
             // Run
 
-
+            
             play(trial.stimulus);
 
             jsPsych.pluginAPI.setTimeout(endTrial, 2 * trial.duration * 1000);

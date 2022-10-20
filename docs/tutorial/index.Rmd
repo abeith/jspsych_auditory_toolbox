@@ -131,7 +131,6 @@ knitr::include_app("latency_test.html")
 ## Evaluation simulated
 
 ```{r, warning=FALSE}
-
 sim_data <- readLines('sim_trials.json') |>
   jsonlite::fromJSON()
 
@@ -146,10 +145,13 @@ p1 <- sim_data %>%
 p2 <- sim_data %>%
   filter(trial_type == 'latency-test') %>%
   as_tibble() %>%
-  mutate(diff = latency - dummy) %>%
-  ggplot(aes(dummy, diff)) +
-  geom_point() +
-  labs(x = 'Simulated delay', y = 'Error (ms)')
+  mutate(
+  diff = latency - dummy
+  ) %>%
+  ggplot(aes(diff)) +
+  geom_histogram(bins = 30) +
+  geom_vline(aes(xintercept = mean(diff)), colour = 'red', lty = 2) +
+  labs(x = 'Error (ms)', y = 'Count')
 cowplot::plot_grid(p1, p2)
 ```
 
