@@ -6,7 +6,7 @@ The [[https://www.jspsych.org/7.3/tutorials/hello-world/][jsPsych tutorials]] su
 2. Downloading the distribution and hosting your own copy. This is easy and very flexible.
 3. Using npm. If you know what this is you can decide yourself if it's the right approach for you, otherwise this is probably not the best place to learn.
 
-I went for method 2 by downloading the latest release of jsPsych from GitHub. You can [[https://www.eff.org/deeplinks/2018/06/gdpr-and-browser-fingerprinting-how-it-changes-game-sneakiest-web-trackers][download]] it manually and unzip it to your project folder or on Linux/MacOS you can use the command line
+I went for method 2 by downloading the latest release of jsPsych from GitHub. You can [[https://www.github.com/jspsych/jspsych/releases/latest/download/jspsych.zip][download]] it manually and unzip it to your project folder or on Linux/MacOS you can use the command line
 
 #+begin_src sh :eval never
   cd /path/to/your/project
@@ -59,8 +59,51 @@ You can then test it by visiting [[http://localhost:8080/hello_world/][http://lo
 
 ** Docker compose
 
-Alternatively, this repository comes with a Docker Compose configuration with a named Docker volume and network. Docker volumes make it easier to work with file permissions and don't expose your computer's file system to the Docker environment. You can bring up this configuration with the following command
+When running experiments it's useful to use Docker Compose to define your configuration. This repository comes with a Docker Compose configuration with a named Docker volume and network. Docker volumes make it easier to work with file permissions and don't expose your computer's file system to the Docker environment. You can bring up this configuration with the following command
 
 #+begin_src sh
   docker compose build && docker compose up -d
 #+end_src
+
+After running this command try the stimulus recorder example at [[http://localhost:8080/stim_recorder][http://localhost:8080/stim_recorder]].
+
+After completing the experiment the trial data and audio data should be saved in the Docker volume. The following script gives an example of how you could access this information in R
+
+#+begin_src R
+  ## Create a temporary directory
+  tmp_dir <- tempdir()
+
+  ## Copy JSON files from Docker volume to temp dir
+  system(sprintf('docker cp jat_php:/var/data/recordings/json %s', tmp_dir))
+
+  ## Find the most recent trial data file
+  json_files <- list.files(sprintf('%s/json', tmp_dir), '^stim_recorder', full.names = T)
+  json_file <- json_files[which.max(rank(file.info(json_files)$mtime))]
+
+  ## Read trial data (requires jsonlite package)
+  json_data <- jsonlite::fromJSON(json_file, F)
+
+  ## Extract the trials where audio was saved
+  save_trials <- json_data[sapply(json_data, \(x) x$trial_type == 'pcm-save')]
+
+  ## Copy audio from Docker volume to temp dir with appropriate names
+  sapply(save_trials, \(x) system(sprintf('docker cp jat_php:/var/data/recordings/audio/%s.wav %s/audio/%s.wav', x$mic_ref, tmp_dir, x$stimulus)))
+
+  ## Listen to the audio (requires a command line audio player such as SoX)
+  system(sprintf('play %s/audio/blue.wav', tmp_dir))
+
+  ## Alternatively, print the path to the file and open it manually
+  sprintf('%s/audio/blue.wav', tmp_dir)
+
+#+end_src
+
+Alternatively, you could copy all of the saved data from the Docker volume to the host. You would probably want to do use a similar approach to this during data collection to make backups.
+
+#+begin_src sh
+  docker cp jat_php:/var/data/recordings ./
+#+end_src
+
+* Using the jspsych_auditory_toolbox plugins
+
+Plugins are save to the =docs/plugins= folder in this repository. Scripts that support these plugins are saved in the =docs/js= folder.
+
