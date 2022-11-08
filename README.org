@@ -97,7 +97,7 @@ After completing the experiment the trial data and audio data should be saved in
 
 #+end_src
 
-Alternatively, you could copy all of the saved data from the Docker volume to the host. You would probably want to do use a similar approach to this during data collection to make backups.
+Alternatively, you could copy all of the saved data from the Docker volume to the host. You would probably want to use a similar approach to this during data collection to make backups.
 
 #+begin_src sh
   docker cp jat_php:/var/data/recordings ./

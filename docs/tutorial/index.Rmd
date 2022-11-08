@@ -83,7 +83,7 @@ const rec_play = {
     loop_function: (data) => {
         let retry = data.values()[1].retry;
         data.values()[0].mic_signal = (retry) ? "delete" : "save";
-        return data.values()[1].retry;
+        return retry;
     }
 };
 ```
@@ -110,7 +110,7 @@ symbols <- c('\u2718', '\u2714')
   kable()
 ```
 
-API = Application Programming Interface<br>
+<!-- API = Application Programming Interface<br> -->
 PCM = Pulse-Code Modulation (uncompressed audio data)
 
 # Latency
