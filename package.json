@@ -1,0 +1,38 @@
+{
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "test": "jest",
+        "test:watch": "npm test -- --watch",
+        "build": "turbo run build",
+        "build:archive": "gulp createCoreDistArchive",
+        "update-unpkg-links": "gulp updateUnpkgLinks",
+        "update-plugin-versions": "gulp updatePluginVersions",
+        "prepare": "node -e 'process.exit(!process.env.CI)' || (husky install && npm run build)",
+        "tsc": "turbo tsc",
+        "changeset": "changeset",
+        "changeset:version": "changeset version && npm install && npm run update-unpkg-links && npm run update-plugin-versions",
+        "changeset:publish": "npm run build && changeset publish",
+        "docs:deploy": "poetry install && poetry run mike deploy -u",
+        "docs:serve": "poetry install && poetry run mike serve"
+    },
+    "engines": {
+        "node": ">= 14.0.0",
+        "npm": ">= 6.0.0"
+    },
+    "devDependencies": {
+        "@changesets/changelog-github": "^0.4.7",
+        "@changesets/cli": "^2.25.2",
+        "husky": "^8.0.2",
+        "import-sort-style-module": "^6.0.0",
+        "jest": "^29.3.1",
+        "lint-staged": "^13.0.3",
+        "prettier": "^2.7.1",
+        "prettier-plugin-import-sort": "^0.0.7",
+        "ts-jest": "^29.0.3",
+        "turbo": "^1.6.3"
+    }
+}

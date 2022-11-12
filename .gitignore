@@ -3,3 +3,5 @@
 !README.org
 /jspsych.zip
 **.DS_Store
+node_modules/
+packages/*/dist/
