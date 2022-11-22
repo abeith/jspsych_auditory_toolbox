@@ -45,6 +45,7 @@ class AudioAudioResponsePlugin implements JsPsychPlugin<Info> {
 
   trial(display_element: HTMLElement, trial: TrialType<Info>) {
     var context = this.jsPsych.pluginAPI.audioContext();
+      context.resume();
 
     // data saving
     var trial_data = {
@@ -121,10 +122,10 @@ class AudioAudioResponsePlugin implements JsPsychPlugin<Info> {
 
       display_element.innerHTML = trial.prompt;
       this.micProcessor.parameters.get("isRecording").setValueAtTime(1, start_time);
-      this.stimProcessor.parameters.get("isRecording").setValueAtTime(1, start_time);
+        this.stimProcessor.parameters.get("isRecording").setValueAtTime(1, start_time);
       this.micProcessor.parameters.get("isRecording").setValueAtTime(0, end_time);
-      this.stimProcessor.parameters.get("isRecording").setValueAtTime(0, end_time);
-      this.audio.start(start_time);
+        this.stimProcessor.parameters.get("isRecording").setValueAtTime(0, end_time);
+        this.audio.start(start_time);
     };
 
     startTrial();

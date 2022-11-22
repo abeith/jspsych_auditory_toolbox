@@ -1,8 +1,8 @@
 {
-  "name": "@jspsych-auditory-toolbox/plugin-audio-audio-response",
+  "name": "@jspsych-auditory-toolbox/plugin-av-audio-response",
   "private": "true",
   "version": "0.1.0",
-  "description": "jsPsych plugin for playing an audio file and recording an auditory response",
+    "description": "jsPsych plugin for playing an audio and visual stimuli then recording an auditory response",
   "type": "module",
   "main": "dist/index.cjs",
   "exports": {
@@ -33,7 +33,7 @@
   "bugs": {
   "url": "https://github.com/abeith/jspsych_auditory_toolbox/issues"
   },
-  "homepage": "https://github.com/abeith/jspsych_auditory_toolbox/tree/main/packages/plugin-audio-audio-response",
+  "homepage": "https://github.com/abeith/jspsych_auditory_toolbox/tree/main/packages/plugin-av-audio-response",
   "peerDependencies": {
     "jspsych": ">=7.0.0"
   },

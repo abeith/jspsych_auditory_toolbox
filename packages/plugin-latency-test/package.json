@@ -1,8 +1,8 @@
 {
-  "name": "@jspsych-auditory-toolbox/plugin-audio-audio-response",
+  "name": "@jspsych-auditory-toolbox/plugin-latency-test",
   "private": "true",
   "version": "0.1.0",
-  "description": "jsPsych plugin for playing an audio file and recording an auditory response",
+  "description": "jsPsych plugin for measuring round-trip latency",
   "type": "module",
   "main": "dist/index.cjs",
   "exports": {
@@ -31,9 +31,9 @@
   "author": "Alistair Beith",
   "license": "MIT",
   "bugs": {
-  "url": "https://github.com/abeith/jspsych_auditory_toolbox/issues"
+      "url": "https://github.com/abeith/jspsych_auditory_toolbox/issues"
   },
-  "homepage": "https://github.com/abeith/jspsych_auditory_toolbox/tree/main/packages/plugin-audio-audio-response",
+  "homepage": "https://github.com/abeith/jspsych_auditory_toolbox/tree/main/packages/plugin-latency-test",
   "peerDependencies": {
     "jspsych": ">=7.0.0"
   },

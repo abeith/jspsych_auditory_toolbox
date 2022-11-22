@@ -6,6 +6,13 @@
       <script src="https://unpkg.com/@jspsych/plugin-preload"></script>
       <link href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css" rel="stylesheet" type="text/css" />
       <script src="../packages/plugin-audio-audio-response/dist/index.browser.js"></script>
+      <script src="../packages/plugin-av-audio-response/dist/index.browser.js"></script>
+      <style>
+       body {
+           color: white;
+           background-color: black;
+       }
+      </style>
   </head>
   <body></body>
   <script>
@@ -18,10 +25,13 @@
 
    var timeline = [];
 
-   timeline.push({
+   var preload = {
        type: jsPsychPreload,
-       auto_preload: true
-   });
+       auto_preload: true,
+       audio: ['sound/speech_green.mp3', 'sound/chirp4.wav', 'sound/chirp16.wav']
+   };
+
+   timeline.push(preload);
 
    timeline.push({
        type: jsPsychHtmlButtonResponse,
@@ -35,17 +45,41 @@
        type: jsPsychAudioAudioResponse,
        stimulus: 'sound/speech_green.mp3',
        prompt: "<p>dummy trial</p>",
-       trial_duration: 100
-   });
-
-   timeline.push({
-       type: jsPsychAudioAudioResponse,
-       stimulus: 'sound/speech_green.mp3',
-       prompt: "<p>Repeat the word</p>",
        trial_duration: 1000
    });
 
-   jsPsych.run(timeline); 
+   timeline.push({
+       type: jsPsychHtmlButtonResponse,
+       stimulus: '<div style="max-width:600px;"><p>WARNING!</p> '+
+                 '<p>The following trials contain flashing imagery</p>',
+       choices: ['Continue']
+   });
+
+   let next_trial = {
+       type: jsPsychHtmlButtonResponse,
+       stimulus: '<div style="height:600px;"><p>...</p>',
+       choices: ['Continue']
+   };
+
+   let offline_latency_test = {
+       type: jsPsychAVAudioResponse,
+       stimulus: 'sound/barcode.wav',
+       prompt: "<p>av test</p>",
+       trial_duration: 2000,
+       visual_stim: ["0","1","0","1","0","1","0","1","0","1","0"],
+       visual_times: [75,110,302,355,599,785,1231,1286,1378,1445,2000]
+   };
+
+
+   let rep_node = {
+       timeline: [next_trial, offline_latency_test],
+       repetitions: 2
+   };
+
+   timeline.push(rep_node);
+
+
+   jsPsych.run(timeline);
 
   </script>
 </html>

@@ -1,0 +1,82 @@
+<html>
+    <head>
+        <style>.mermaid svg { height: auto; }</style>
+    </head>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+        <script>
+         mermaid.initialize({ startOnLoad: true, theme: 'neutral'});
+        </script>
+
+        <p>In diagrams rounded boxes are software elements and square boxes are hardware elements</p>
+
+        <div>
+            <h2>Remote audio-audio-response trial</h2>
+            <p>Record stimulus with same AudioWorklet as response and use latency measurement from another trial to subtract round-trip latency. If happy that stimulus recording and original stimulus are identical (which they should be) then no need to actually save stimulus.</p>
+            stimulus latency: 0<br>
+            audio response latency: output latency + input latency<br>
+            stim/A async: output latency + input latency
+            <div class="mermaid">
+                graph LR
+                stim(stim)-->left(L)
+                left-->rec(recorder<br>worklet)
+                stim(stim)-->|output<br>latency|headphones
+                headphones-.-microphone
+                microphone-->|input<br>latency|right(R)
+                right-->rec
+            </div>
+        </div>
+        <br>
+
+        <div>
+            <h2>Lab-based audio-audio-response trial</h2>
+            <p>Send stimulus to output and loop output back to input. Calculate round trip latency trial-by-trial using the stimulus recording and original stimulus (e.g. cross-correlation) or epoch responses from loopback responses.</p>
+            audio loopback latency: output latency + input latency<br>
+            audio response latency: output latency + input latency<br>
+            A/A async: 0
+            <div class="mermaid">
+                graph LR
+                stim(stim)-->|output<br>latency|loopback
+                loopback-->|input<br>latency|left(L)
+                left-->rec(recorder<br>worklet)
+                stim(stim)-->|output<br>latency|headphones
+                headphones-.-microphone
+                microphone-->|input<br>latency|right(R)
+                right-->rec
+            </div>
+        </div>
+        <br>
+
+        <div>
+            <h2>Measure output latency</h2>
+            <p>Matched barcode-like stimuli. Audio is burst of white noise with different durations that would look like a barcode on a spectrogram. Video is white box being displayed on black background at the same times and durations as the white noise. Arduino converts light measurement to audio in real-time (via PWM?).</p>
+            audio latency: output latency + input latency<br>
+            video latency: input latency +/- display error<br>
+            A/V async: output latency +/- display error
+            <div class="mermaid">
+                graph LR
+                abar(audio barcode)-->|output<br>latency|loopback-->|input<br>latency|left(L)
+                vbar(video barcode)-->|display<br>error|monitor
+                monitor-.-arduino
+                arduino-->|input<br>latency|right(R)
+                left-->rec(recorder<br>worklet)
+                right-->rec
+            </div>
+        </div>
+        <br>
+
+        <div>
+            <h2>Measure input latency</h2>
+            audio latency: 0<br>
+            video latency: input latency +/- display error<br>
+            A/V async: input latency +/- display error
+            <div class="mermaid">
+                graph LR
+                abar(audio barcode)-->left(L)-->rec{recorder worklet}
+                vbar(video barcode)-->|display<br>error|monitor
+                monitor-.-arduino
+                arduino-->|input<br>latency|right(R)-->rec(recorder<br>worklet)
+            </div>
+        </div>
+    </body>
+</html>
