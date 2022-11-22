@@ -1,109 +1,71 @@
-* Installing jsPsych
+* Quick start
 
-The [[https://www.jspsych.org/7.3/tutorials/hello-world/][jsPsych tutorials]] suggest three ways of including jsPsych in your project
-
-1. Linking to a CDN. I don't like this option because it relies on a third party to host the code you're using.
-2. Downloading the distribution and hosting your own copy. This is easy and very flexible.
-3. Using npm. If you know what this is you can decide yourself if it's the right approach for you, otherwise this is probably not the best place to learn.
-
-I went for method 2 by downloading the latest release of jsPsych from GitHub. You can [[https://www.github.com/jspsych/jspsych/releases/latest/download/jspsych.zip][download]] it manually and unzip it to your project folder or on Linux/MacOS you can use the command line
+Clone this branch
 
 #+begin_src sh :eval never
-  cd /path/to/your/project
-  curl -L https://www.github.com/jspsych/jspsych/releases/latest/download/jspsych.zip > jspsych.zip
-  unzip jspsych.zip -d www/jspsych
-  rm jspsych.zip
+  git clone --branch package --single-branch git@github.com:abeith/jspsych_auditory_toolbox.git
 #+end_src
 
-* Hello World
+Build packages (need to run npm install first?)
 
-You can then create the [[https://www.jspsych.org/7.3/tutorials/hello-world/][hello world example]] by saving the following code as =/path/to/your/project/www/hello_world/index.html=
-
-#+begin_src html :mkdirp yes :tangle www/hello_world/index.html
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <title>My experiment</title>
-      <script src="../jspsych/dist/jspsych.js"></script>
-      <script src="../jspsych/dist/plugin-html-keyboard-response.js"></script>
-      <link href="../jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body></body>
-    <script>
-      const jsPsych = initJsPsych();
-
-      const hello_trial = {
-      type: jsPsychHtmlKeyboardResponse,
-      stimulus: 'Hello world!'
-      }
-
-      jsPsych.run([hello_trial]);
-    </script>
-  </html>
-
+#+begin_src sh :eval never
+  cd packages
+  cd plugin-audio-audio-response
+  npm run build
+  cd ../plugin-av-audio-response
+  npm run build
+  cd ../plugin-latency-test
+  npm run build
+  cd ../..
 #+end_src
 
-You can then open the html file in your web browser to check that it works.
+Build and bring up docker-compose configuration
 
-* Local hosting
-
-** Docker run
-
-Opening the file in your web browser is fine for a hello world demo but you'll need a server to test plugins that record audio and other features associated with privacy concerns. Docker is a very easy way to do this. Once you have Docker [[https://www.docker.com][installed]] you can create a server by running the following command in your Terminal/Command Prompt
-
-#+begin_src sh
-  docker run -d -p 8080:80 --name jspsych_server -v "$PWD"/www:/var/www/html php:7.2-apache
+#+begin_src sh :eval never
+  docker compose build
+  docker compose up -d
 #+end_src
 
-You can then test it by visiting [[http://localhost:8080/hello_world/][http://localhost:8080/hello_world/]] in your browser.
+Visit examples in browser (e.g. [[http://localhost:8080/examples/jspsych-audio-audio-response.html]])
 
-** Docker compose
+* plugin-audio-audio-response
 
-When running experiments it's useful to use Docker Compose to define your configuration. This repository comes with a Docker Compose configuration with a named Docker volume and network. Docker volumes make it easier to work with file permissions and don't expose your computer's file system to the Docker environment. You can bring up this configuration with the following command
+** Parameters
 
-#+begin_src sh
-  docker compose build && docker compose up -d
-#+end_src
+- stimulus: Audio file to play
+- prompt: Text to display
+- trial_duration: Total trial duration in ms
 
-After running this command try the stimulus recorder example at [[http://localhost:8080/stim_recorder][http://localhost:8080/stim_recorder]].
+** Description
 
-After completing the experiment the trial data and audio data should be saved in the Docker volume. The following script gives an example of how you could access this information in R
+Stimulus and microphone signal are returned as PCM data. Can be used for latency calculations if stimulus is audible in microphone signal or as a normal audio stim/audio response trial.
 
-#+begin_src R
-  ## Create a temporary directory
-  tmp_dir <- tempdir()
+* plugin-av-audio-response
 
-  ## Copy JSON files from Docker volume to temp dir
-  system(sprintf('docker cp jat_php:/var/data/recordings/json %s', tmp_dir))
+** Parameters
 
-  ## Find the most recent trial data file
-  json_files <- list.files(sprintf('%s/json', tmp_dir), '^stim_recorder', full.names = T)
-  json_file <- json_files[which.max(rank(file.info(json_files)$mtime))]
+- stimulus: Audio file to play
+- prompt: Not used
+- trial_duration: Total trial duration in ms
+- visual_stim: String array of arguments for visual stimulus presentation. Currently if the value is '1' a white box will be displayed, otherwise a black box will be displayed.
+- visual_times: Integer array of same length as visual_stim. Determines the times of visual presentation
 
-  ## Read trial data (requires jsonlite package)
-  json_data <- jsonlite::fromJSON(json_file, F)
+** Description
 
-  ## Extract the trials where audio was saved
-  save_trials <- json_data[sapply(json_data, \(x) x$trial_type == 'pcm-save')]
+Presented for testing only. Current implementation is intended to be used with a barcode like stimulus pair.
 
-  ## Copy audio from Docker volume to temp dir with appropriate names
-  sapply(save_trials, \(x) system(sprintf('docker cp jat_php:/var/data/recordings/audio/%s.wav %s/audio/%s.wav', x$mic_ref, tmp_dir, x$stimulus)))
+* plugin-latency-test
+ 
+** Parameters
 
-  ## Listen to the audio (requires a command line audio player such as SoX)
-  system(sprintf('play %s/audio/blue.wav', tmp_dir))
+- stimulus: Audio file. Must be a 'chirp'
+- trial_duration: Total trial duration in ms
+- dummy: If false do actual latency test, otherwise simulate one with specified latency in seconds
+- f_max: Maximum frequency of chirp
+- fft_size: Length of FFT. Should be a power of 2
+- vol: Volume to play stimulus at. Use low value for simulations
+- random_delay: If true adds a random delay to microphone signal that is then subtracted from latency calculation. Avoids systematic error due to bin alignment.
 
-  ## Alternatively, print the path to the file and open it manually
-  sprintf('%s/audio/blue.wav', tmp_dir)
+** Description
 
-#+end_src
-
-Alternatively, you could copy all of the saved data from the Docker volume to the host. You would probably want to use a similar approach to this during data collection to make backups.
-
-#+begin_src sh
-  docker cp jat_php:/var/data/recordings ./
-#+end_src
-
-* Using the jspsych_auditory_toolbox plugins
-
-Plugins are save to the =docs/plugins= folder in this repository. Scripts that support these plugins are saved in the =docs/js= folder.
-
+Intended use is for participant to hold headphones up to microphone during the trial. This can be repeated in blocks between experiment trials and the calculated latency is then added to the response epoch. Can also be used to measure variability of latency for screening participants.
